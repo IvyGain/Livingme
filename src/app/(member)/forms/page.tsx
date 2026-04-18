@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { FORM_DEFS } from "@/lib/form-defs";
+import { calcDaysSince } from "@/lib/membership-duration";
 
 export default async function FormsPage() {
   const session = await auth();
@@ -10,10 +11,11 @@ export default async function FormsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { ambassadorType: true, joinedAt: true, referrals: { select: { id: true } } },
+    select: { ambassadorType: true, joinedAt: true, startDate: true, referrals: { select: { id: true } } },
   });
 
   const isAmbassador = !!user?.ambassadorType;
+  const membershipDays = calcDaysSince(user?.startDate, user?.joinedAt);
   const availableForms = FORM_DEFS.filter((f) => {
     if (f.ambassadorOnly && !isAmbassador) return false;
     return true;
@@ -51,6 +53,15 @@ export default async function FormsPage() {
             )}
           </div>
         </div>
+        {membershipDays !== null && (
+          <div className="mt-4 pt-4 border-t border-[#f0ebe5] flex items-baseline gap-2">
+            <span className="text-xs text-[#9a8070]">Living Me 歴</span>
+            <span className="text-2xl font-light text-[#C07052] tabular-nums">
+              {membershipDays}
+            </span>
+            <span className="text-xs text-[#9a8070]">日目</span>
+          </div>
+        )}
       </div>
 
       {/* Forms section */}

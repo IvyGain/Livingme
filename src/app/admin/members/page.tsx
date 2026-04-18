@@ -145,6 +145,11 @@ export default async function MembersPage() {
                       isActive={member.isActive}
                       currentRole={member.role}
                       currentAmbassadorType={member.ambassadorType}
+                      currentStartDate={
+                        member.startDate
+                          ? member.startDate.toISOString().slice(0, 10)
+                          : null
+                      }
                       allTags={allTags}
                       userTagIds={member.memberTags.map((mt) => mt.tag.id)}
                     />

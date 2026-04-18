@@ -77,6 +77,7 @@ export async function POST(
         isActive: true,
         role: invite.role,
         joinedAt: new Date(),
+        startDate: new Date(),
       },
     });
     userId = newUser.id;
