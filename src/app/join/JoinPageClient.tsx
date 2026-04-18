@@ -10,20 +10,31 @@ import type { JoinPageSettings, PlanBlock } from "@/lib/join-settings";
 
 type Step = "select" | "form" | "payment";
 
-export function JoinPageClient({ settings }: { settings: JoinPageSettings }) {
+export function JoinPageClient({
+  settings,
+  inviteToken,
+  inviteEmail,
+  inviteError,
+}: {
+  settings: JoinPageSettings;
+  inviteToken?: string | null;
+  inviteEmail?: string | null;
+  inviteError?: string | null;
+}) {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<PlanBlock | null>(null);
   const [step, setStep] = useState<Step>("select");
 
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(inviteEmail ?? "");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(inviteError ?? null);
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
 
   const visiblePlans = settings.plans.filter((p) => p.visible);
   const isFree = selectedPlan?.price.includes("¥0") || selectedPlan?.price === "無料";
+  const hasValidInvite = Boolean(inviteToken && inviteEmail && !inviteError);
 
   function handleSelectPlan(plan: PlanBlock) {
     setSelectedPlan(plan);
@@ -39,12 +50,16 @@ export function JoinPageClient({ settings }: { settings: JoinPageSettings }) {
 
   function handleFreeSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!inviteToken || !hasValidInvite) {
+      setError("無料会員登録には招待リンクが必要です。招待メールのリンクからアクセスしてください。");
+      return;
+    }
     if (!name.trim() || !email.trim() || !password) {
       setError("すべての項目を入力してください");
       return;
     }
     startTransition(async () => {
-      const result = await registerFree(name, email, password);
+      const result = await registerFree(inviteToken, name, email, password);
       if (!result.success) {
         setError(result.error ?? "エラーが発生しました");
         return;
@@ -142,49 +157,80 @@ export function JoinPageClient({ settings }: { settings: JoinPageSettings }) {
                 </h1>
                 <p className="text-sm text-[var(--lm-muted)]">
                   {isFree
-                    ? "お名前・メールアドレス・パスワードを入力してください"
+                    ? hasValidInvite
+                      ? "招待メールに記載のアドレスで登録します。お名前とパスワードを入力してください"
+                      : "お名前・メールアドレス・パスワードを入力してください"
                     : "まずはお名前とメールアドレスを教えてください"}
                 </p>
               </div>
-              <form onSubmit={isFree ? handleFreeSubmit : handlePaidFormNext} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">お名前</label>
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                    placeholder="山田 花子" required
-                    className="w-full h-11 px-4 rounded-xl border border-[var(--lm-border)] bg-white text-sm placeholder:text-[var(--lm-muted)] focus:outline-none focus:border-[var(--lm-accent)] transition-colors" />
+
+              {isFree && !hasValidInvite ? (
+                <div className="bg-[var(--lm-card-bg)] border border-[var(--lm-border)] rounded-2xl p-6 text-center space-y-4">
+                  <p className="text-sm text-[var(--lm-primary)] leading-relaxed">
+                    Living Me は招待制コミュニティです。<br />
+                    無料会員登録には招待リンクが必要です。
+                  </p>
+                  <p className="text-xs text-[var(--lm-muted)]">
+                    すでに招待メールをお持ちの方は、メール本文のボタン（またはリンク）からお進みください。
+                  </p>
+                  {inviteError && (
+                    <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                      {inviteError}
+                    </p>
+                  )}
+                  <Link
+                    href="/login"
+                    className="inline-block px-5 h-10 leading-10 rounded-full border border-[var(--lm-accent)] text-[var(--lm-accent)] text-sm hover:bg-[var(--lm-accent)] hover:text-white transition-colors"
+                  >
+                    既にアカウントをお持ちの方はログイン
+                  </Link>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">メールアドレス</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    placeholder="hanako@example.com" required
-                    className="w-full h-11 px-4 rounded-xl border border-[var(--lm-border)] bg-white text-sm placeholder:text-[var(--lm-muted)] focus:outline-none focus:border-[var(--lm-accent)] transition-colors" />
-                </div>
-                {isFree && (
+              ) : (
+                <form onSubmit={isFree ? handleFreeSubmit : handlePaidFormNext} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1.5">パスワード</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-                      placeholder="8文字以上" required minLength={8}
+                    <label className="block text-sm font-medium mb-1.5">お名前</label>
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                      placeholder="山田 花子" required
                       className="w-full h-11 px-4 rounded-xl border border-[var(--lm-border)] bg-white text-sm placeholder:text-[var(--lm-muted)] focus:outline-none focus:border-[var(--lm-accent)] transition-colors" />
                   </div>
-                )}
-                {error && (
-                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error}</p>
-                )}
-                {/* 外部申し込みURLがある場合はそちらへ誘導 */}
-                {!isFree && selectedPlan?.joinUrl ? (
-                  <a
-                    href={selectedPlan.joinUrl}
-                    className="block w-full h-12 rounded-full bg-[var(--lm-accent)] text-white font-medium text-base hover:opacity-90 transition-opacity text-center leading-[3rem]"
-                  >
-                    申し込みページへ
-                  </a>
-                ) : (
-                  <button type="submit" disabled={isPending}
-                    className="w-full h-12 rounded-full bg-[var(--lm-accent)] text-white font-medium text-base hover:opacity-90 disabled:opacity-60 transition-opacity">
-                    {isPending ? "処理中..." : isFree ? "無料会員として登録する" : "次へ（お支払い情報の入力）"}
-                  </button>
-                )}
-              </form>
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">
+                      メールアドレス
+                      {hasValidInvite && (
+                        <span className="ml-2 text-xs text-[var(--lm-muted)]">（招待メールと一致する必要があります）</span>
+                      )}
+                    </label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                      placeholder="hanako@example.com" required readOnly={isFree && hasValidInvite}
+                      className="w-full h-11 px-4 rounded-xl border border-[var(--lm-border)] bg-white text-sm placeholder:text-[var(--lm-muted)] focus:outline-none focus:border-[var(--lm-accent)] transition-colors read-only:bg-[var(--lm-card-bg)] read-only:cursor-not-allowed" />
+                  </div>
+                  {isFree && (
+                    <div>
+                      <label className="block text-sm font-medium mb-1.5">パスワード</label>
+                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                        placeholder="8文字以上" required minLength={8}
+                        className="w-full h-11 px-4 rounded-xl border border-[var(--lm-border)] bg-white text-sm placeholder:text-[var(--lm-muted)] focus:outline-none focus:border-[var(--lm-accent)] transition-colors" />
+                    </div>
+                  )}
+                  {error && (
+                    <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3">{error}</p>
+                  )}
+                  {/* 外部申し込みURLがある場合はそちらへ誘導 */}
+                  {!isFree && selectedPlan?.joinUrl ? (
+                    <a
+                      href={selectedPlan.joinUrl}
+                      className="block w-full h-12 rounded-full bg-[var(--lm-accent)] text-white font-medium text-base hover:opacity-90 transition-opacity text-center leading-[3rem]"
+                    >
+                      申し込みページへ
+                    </a>
+                  ) : (
+                    <button type="submit" disabled={isPending}
+                      className="w-full h-12 rounded-full bg-[var(--lm-accent)] text-white font-medium text-base hover:opacity-90 disabled:opacity-60 transition-opacity">
+                      {isPending ? "処理中..." : isFree ? "無料会員として登録する" : "次へ（お支払い情報の入力）"}
+                    </button>
+                  )}
+                </form>
+              )}
             </div>
           )}
 
