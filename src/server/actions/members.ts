@@ -26,6 +26,7 @@ export async function getMembers() {
       role: true,
       ambassadorType: true,
       joinedAt: true,
+      startDate: true,
       lastLoginAt: true,
       stripeCustomerId: true,
       createdAt: true,
@@ -93,6 +94,35 @@ export async function updateMemberInfo(
 
     revalidatePath("/admin/members");
 
+    return { success: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "更新に失敗しました";
+    return { success: false, error: message };
+  }
+}
+
+export async function updateMemberStartDate(
+  userId: string,
+  startDate: string | null,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await requireAdmin();
+
+    let parsed: Date | null = null;
+    if (startDate) {
+      // Accept YYYY-MM-DD (input[type=date]) interpreted at local midnight.
+      parsed = new Date(`${startDate}T00:00:00`);
+      if (Number.isNaN(parsed.getTime())) {
+        return { success: false, error: "日付の形式が不正です" };
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { startDate: parsed },
+    });
+
+    revalidatePath("/admin/members");
     return { success: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : "更新に失敗しました";

@@ -10,7 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { UserRole, AmbassadorType } from "@prisma/client";
-import { updateMemberActive, updateMemberRole, updateMemberAmbassadorType } from "@/server/actions/members";
+import {
+  updateMemberActive,
+  updateMemberRole,
+  updateMemberAmbassadorType,
+  updateMemberStartDate,
+} from "@/server/actions/members";
 import { addTagToUser, removeTagFromUser } from "@/server/actions/chat";
 import { useRouter } from "next/navigation";
 
@@ -25,16 +30,25 @@ interface MemberActionsProps {
   isActive: boolean;
   currentRole: UserRole;
   currentAmbassadorType: AmbassadorType | null;
+  currentStartDate: string | null;
   allTags: Tag[];
   userTagIds: string[];
 }
 
-export function MemberActions({ userId, isActive, currentRole, currentAmbassadorType, allTags, userTagIds }: MemberActionsProps) {
+export function MemberActions({ userId, isActive, currentRole, currentAmbassadorType, currentStartDate, allTags, userTagIds }: MemberActionsProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [startDate, setStartDate] = useState<string>(currentStartDate ?? "");
   const [tagIds, setTagIds] = useState<string[]>(userTagIds);
   const [isTagPending, startTagTransition] = useTransition();
+
+  async function handleStartDateSave() {
+    setIsLoading(true);
+    const result = await updateMemberStartDate(userId, startDate || null);
+    if (result.success) router.refresh();
+    setIsLoading(false);
+  }
 
   async function handleActiveToggle() {
     setIsLoading(true);
@@ -117,6 +131,25 @@ export function MemberActions({ userId, isActive, currentRole, currentAmbassador
             <SelectItem value={AmbassadorType.PARTNER}>提携アンバサダー（9,900円）</SelectItem>
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-1">
+          <label className="text-xs text-gray-500 whitespace-nowrap">起算日</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            disabled={isLoading}
+            className="h-7 px-2 text-xs border border-gray-200 rounded"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-xs"
+            onClick={handleStartDateSave}
+            disabled={isLoading}
+          >
+            保存
+          </Button>
+        </div>
         {allTags.length > 0 && (
           <div className="flex flex-wrap gap-1 justify-end max-w-48">
             {allTags.map((tag) => {

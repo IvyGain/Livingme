@@ -55,6 +55,7 @@ export async function registerFree(
 
   const hashed = await hashPassword(password);
 
+  const now = new Date();
   const created = await prisma.user.create({
     data: {
       name: trimmedName,
@@ -62,7 +63,8 @@ export async function registerFree(
       password: hashed,
       role: invite.role === "ADMIN" ? "ADMIN" : invite.role,
       isActive: true,
-      joinedAt: new Date(),
+      joinedAt: now,
+      startDate: now,
     },
   });
 

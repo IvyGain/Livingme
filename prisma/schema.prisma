@@ -18,6 +18,9 @@ model User {
   isHelper               Boolean         @default(false)
   ambassadorType         AmbassadorType?
   joinedAt               DateTime?
+  /// Living Me の継続日数カウント基準日。新規会員は登録日、
+  /// 既存会員は自身で指定した日（管理画面から一括設定可）。
+  startDate              DateTime?
   lastLoginAt            DateTime?
   referrerId             String?
   password               String?
