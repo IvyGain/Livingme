@@ -15,6 +15,14 @@ const todayContentSchema = z.object({
   journalingTheme:z.string().optional(),
   morningNote:    z.string().optional(),
   isPublished:    z.boolean().default(false),
+  // エネルギーシェア構造化フィールド
+  mayanInfo:      z.string().optional(),
+  mayanBlackKin:  z.boolean().optional(),
+  moonPhase:      z.enum(["full", "new"]).nullable().optional(),
+  title:          z.string().optional(),
+  column:         z.string().optional(),
+  symbolNote:     z.string().optional(),
+  todayPoint:     z.string().optional(),
 });
 
 export type TodayContentInput = z.infer<typeof todayContentSchema>;
@@ -37,6 +45,9 @@ async function getTableConfig() {
 function parseRecord(record: LarkRecord): TodayContent {
   const f = record.fields;
   const dateStr = String(f.date ?? "");
+  const rawMoon = String(f.moonPhase ?? "").toLowerCase();
+  const moonPhase: TodayContent["moonPhase"] =
+    rawMoon === "full" ? "full" : rawMoon === "new" ? "new" : null;
   return {
     id:             record.record_id,
     date:           dateStr ? new Date(dateStr + "T00:00:00") : new Date(),
@@ -44,6 +55,13 @@ function parseRecord(record: LarkRecord): TodayContent {
     journalingTheme:String(f.journalingTheme ?? "") || null,
     morningNote:    String(f.morningNote ?? "") || null,
     isPublished:    String(f.isPublished) === "true",
+    mayanInfo:      String(f.mayanInfo ?? "") || null,
+    mayanBlackKin:  String(f.mayanBlackKin) === "true",
+    moonPhase,
+    title:          String(f.title ?? "") || null,
+    column:         String(f.column ?? "") || null,
+    symbolNote:     String(f.symbolNote ?? "") || null,
+    todayPoint:     String(f.todayPoint ?? "") || null,
   };
 }
 
@@ -81,6 +99,13 @@ export async function upsertTodayContent(
       morningNote:    validated.morningNote ?? "",
       isPublished:    validated.isPublished ? "true" : "false",
       publishedAt:    validated.isPublished ? new Date().toISOString() : "",
+      mayanInfo:      validated.mayanInfo ?? "",
+      mayanBlackKin:  validated.mayanBlackKin ? "true" : "false",
+      moonPhase:      validated.moonPhase ?? "",
+      title:          validated.title ?? "",
+      column:         validated.column ?? "",
+      symbolNote:     validated.symbolNote ?? "",
+      todayPoint:     validated.todayPoint ?? "",
     };
 
     const existing = await findByDate(appToken, tableId, dateStr);

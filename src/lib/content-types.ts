@@ -56,6 +56,21 @@ export interface TodayContent {
   journalingTheme:string | null;
   morningNote:    string | null;
   isPublished:    boolean;
+  // ── エネルギーシェア構造化フィールド（任意） ─────────────
+  /** マヤ暦情報（自由記述。例: "K123 白い世界の橋渡し / 赤い月のウェイブスペル / 音5"） */
+  mayanInfo:      string | null;
+  /** 黒キン */
+  mayanBlackKin:  boolean;
+  /** 月相: null / "full" / "new" */
+  moonPhase:      "full" | "new" | null;
+  /** タイトル（今日のテーマの見出しに相当） */
+  title:          string | null;
+  /** コラム（テーマ解説本文） */
+  column:         string | null;
+  /** 今日の紋章プチ解説 */
+  symbolNote:     string | null;
+  /** 💫今日のポイント */
+  todayPoint:     string | null;
 }
 
 // ── Event ────────────────────────────────────────────────────
