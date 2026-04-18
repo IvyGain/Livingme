@@ -53,10 +53,12 @@ export default async function LPPage() {
   const aboutSec = lp.sections.find((s) => s.type === "about");
   const videosSec = lp.sections.find((s) => s.type === "videos");
   const activitiesSec = lp.sections.find((s) => s.type === "activities");
+  const gallerySec = lp.sections.find((s) => s.type === "gallery");
   const testimonialsSec = lp.sections.find((s) => s.type === "testimonials");
   const ctaSec = lp.sections.find((s) => s.type === "cta");
   const activities = lp.activities ?? [];
   const testimonials = lp.testimonials ?? [];
+  const gallery = lp.gallery ?? [];
 
   return (
     <div className="min-h-screen bg-[var(--lm-bg)] text-[var(--lm-primary)]">
@@ -310,6 +312,49 @@ export default async function LPPage() {
         </section>
       )}
 
+      {/* ─── Gallery ─── */}
+      {(!gallerySec || gallerySec.visible) && gallery.length > 0 && (
+        <section
+          className="py-24 px-4"
+          style={gallerySec ? sectionStyle(gallerySec) : {}}
+        >
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-xs tracking-[0.3em] text-[var(--lm-muted)] mb-6 uppercase">Gallery</p>
+              <h2 className="font-serif text-3xl sm:text-4xl font-semibold mb-4">
+                <TextWithBreaks text={gallerySec?.heading ?? "ギャラリー"} />
+              </h2>
+              {gallerySec?.subheading && (
+                <p className="text-[var(--lm-muted)] text-sm max-w-md mx-auto">{gallerySec.subheading}</p>
+              )}
+            </div>
+            <ul className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {gallery.map((photo) => (
+                <li
+                  key={photo.id}
+                  className="group rounded-2xl overflow-hidden bg-[var(--lm-card-bg)] border border-[var(--lm-border)]"
+                >
+                  {photo.imageUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={photo.imageUrl}
+                      alt={photo.caption}
+                      className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      loading="lazy"
+                    />
+                  )}
+                  {photo.caption && (
+                    <p className="px-3 py-2 text-xs text-[var(--lm-muted)] leading-relaxed">
+                      {photo.caption}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
       {/* ─── Testimonials ─── */}
       {(!testimonialsSec || testimonialsSec.visible) && testimonials.length > 0 && (
         <section
@@ -347,7 +392,15 @@ export default async function LPPage() {
                       </div>
                     )}
                     <div>
-                      <p className="text-sm font-semibold">{tm.name}</p>
+                      <p className="text-sm font-semibold flex items-center gap-1.5">
+                        {tm.name}
+                        {tm.gender === "female" && (
+                          <span className="text-[#C96680] text-xs" aria-label="女性">♀</span>
+                        )}
+                        {tm.gender === "male" && (
+                          <span className="text-[#4A7BA0] text-xs" aria-label="男性">♂</span>
+                        )}
+                      </p>
                       {tm.role && <p className="text-xs text-[var(--lm-muted)]">{tm.role}</p>}
                     </div>
                   </div>

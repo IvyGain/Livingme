@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveLPSettings } from "@/server/actions/lp-settings";
-import type { LPSettings, LPSectionConfig, LPVideo, LPActivity, LPTestimonial } from "@/lib/lp-settings";
+import type { LPSettings, LPSectionConfig, LPVideo, LPActivity, LPTestimonial, LPGalleryPhoto } from "@/lib/lp-settings";
 import type { Archive } from "@/lib/content-types";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
@@ -25,6 +25,7 @@ const SECTION_LABELS: Record<string, string> = {
   about: "コンセプト説明",
   videos: "お試し動画",
   activities: "活動内容",
+  gallery: "ギャラリー",
   testimonials: "口コミ",
   cta: "最終CTA",
 };
@@ -34,6 +35,7 @@ const SECTION_ICONS: Record<string, string> = {
   about: "💡",
   videos: "▶",
   activities: "✦",
+  gallery: "🖼️",
   testimonials: "💬",
   cta: "🚀",
 };
@@ -82,6 +84,7 @@ export function LPEditor({
     larkArchiveIds: initialSettings.larkArchiveIds ?? [],
     activities: initialSettings.activities ?? [],
     testimonials: initialSettings.testimonials ?? [],
+    gallery: initialSettings.gallery ?? [],
     ctaLoginButtonText: initialSettings.ctaLoginButtonText ?? "会員ページにログインする",
   });
   const [openSection, setOpenSection] = useState<string | null>("hero");
@@ -147,7 +150,7 @@ export function LPEditor({
 
   /* 口コミ */
   function addTestimonial() {
-    const t: LPTestimonial = { id: `tm_${Date.now()}`, name: "", role: "", body: "", avatarUrl: "" };
+    const t: LPTestimonial = { id: `tm_${Date.now()}`, name: "", role: "", body: "", avatarUrl: "", gender: "" };
     setSettings((s) => ({ ...s, testimonials: [...s.testimonials, t] }));
   }
   function updateTestimonial(id: string, patch: Partial<LPTestimonial>) {
@@ -155,6 +158,18 @@ export function LPEditor({
   }
   function removeTestimonial(id: string) {
     setSettings((s) => ({ ...s, testimonials: s.testimonials.filter((t) => t.id !== id) }));
+  }
+
+  /* ギャラリー */
+  function addGalleryPhoto() {
+    const p: LPGalleryPhoto = { id: `gp_${Date.now()}`, imageUrl: "", caption: "" };
+    setSettings((s) => ({ ...s, gallery: [...s.gallery, p] }));
+  }
+  function updateGalleryPhoto(id: string, patch: Partial<LPGalleryPhoto>) {
+    setSettings((s) => ({ ...s, gallery: s.gallery.map((p) => (p.id === id ? { ...p, ...patch } : p)) }));
+  }
+  function removeGalleryPhoto(id: string) {
+    setSettings((s) => ({ ...s, gallery: s.gallery.filter((p) => p.id !== id) }));
   }
 
   /* コンセプト */
@@ -331,6 +346,32 @@ export function LPEditor({
                 index={i}
                 onUpdate={(patch) => updateTestimonial(tm.id, patch)}
                 onRemove={() => removeTestimonial(tm.id)}
+              />
+            ))}
+          </div>
+        </Card>
+
+        {/* ギャラリー */}
+        <Card
+          title={`ギャラリー (${settings.gallery.length}件)`}
+          subtitle="コミュニティの雰囲気が伝わる写真を 6〜12 枚ほど"
+          action={
+            <button type="button" onClick={addGalleryPhoto} className="flex items-center gap-1 text-xs text-[#C07052] hover:underline">
+              <PlusCircle className="w-3.5 h-3.5" /> 追加
+            </button>
+          }
+        >
+          {settings.gallery.length === 0 && (
+            <p className="text-xs text-gray-400">写真がありません。「追加」で登録できます。</p>
+          )}
+          <div className="space-y-4">
+            {settings.gallery.map((photo, i) => (
+              <GalleryRow
+                key={photo.id}
+                photo={photo}
+                index={i}
+                onUpdate={(patch) => updateGalleryPhoto(photo.id, patch)}
+                onRemove={() => removeGalleryPhoto(photo.id)}
               />
             ))}
           </div>
@@ -777,6 +818,26 @@ function TestimonialRow({
           placeholder="例：主婦 / 会員歴1年"
         />
       </Field>
+      <Field label="性別マーク" hint="（プロフィールに小さく表示）">
+        <div className="flex items-center gap-3 text-sm">
+          {[
+            { value: "", label: "なし" },
+            { value: "female", label: "♀ 女性" },
+            { value: "male", label: "♂ 男性" },
+          ].map((opt) => (
+            <label key={opt.value} className="inline-flex items-center gap-1 cursor-pointer">
+              <input
+                type="radio"
+                name={`gender-${testimonial.id}`}
+                value={opt.value}
+                checked={(testimonial.gender ?? "") === opt.value}
+                onChange={() => onUpdate({ gender: opt.value as "" | "female" | "male" })}
+              />
+              <span>{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      </Field>
       <Field label="口コミ本文">
         <textarea
           value={testimonial.body}
@@ -793,6 +854,46 @@ function TestimonialRow({
         onChange={(url) => onUpdate({ avatarUrl: url })}
         previewClass="h-12 w-12 object-cover rounded-full border border-gray-200 flex-shrink-0"
       />
+    </div>
+  );
+}
+
+function GalleryRow({
+  photo,
+  index,
+  onUpdate,
+  onRemove,
+}: {
+  photo: LPGalleryPhoto;
+  index: number;
+  onUpdate: (patch: Partial<LPGalleryPhoto>) => void;
+  onRemove: () => void;
+}) {
+  const inputCls =
+    "w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#C07052]/30 focus:border-[#C07052] bg-white transition-colors";
+  return (
+    <div className="border border-gray-100 rounded-lg p-3 space-y-3 bg-white">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium text-gray-400">写真 {index + 1}</span>
+        <button type="button" onClick={onRemove} className="p-1 text-gray-300 hover:text-red-400 transition-colors">
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <ImageUpload
+        label="写真"
+        value={photo.imageUrl}
+        onChange={(url) => onUpdate({ imageUrl: url })}
+        previewClass="h-24 w-full object-cover rounded-lg border border-gray-200"
+      />
+      <Field label="キャプション（解説コメント）" hint="（任意）">
+        <input
+          type="text"
+          value={photo.caption}
+          onChange={(e) => onUpdate({ caption: e.target.value })}
+          className={inputCls}
+          placeholder="例：春の朝会でお花見ワーク"
+        />
+      </Field>
     </div>
   );
 }

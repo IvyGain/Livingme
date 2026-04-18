@@ -20,11 +20,18 @@ export interface LPTestimonial {
   role: string;        // 肩書き・説明（任意）
   body: string;        // 口コミ本文
   avatarUrl: string;   // アバター画像（任意）
+  gender?: "female" | "male" | "";  // 女性/男性マーク（空欄でマーク非表示）
+}
+
+export interface LPGalleryPhoto {
+  id: string;
+  imageUrl: string;    // 画像URL
+  caption: string;     // 解説コメント
 }
 
 export interface LPSectionConfig {
   id: string;
-  type: "hero" | "about" | "videos" | "activities" | "testimonials" | "cta";
+  type: "hero" | "about" | "videos" | "activities" | "testimonials" | "gallery" | "cta";
   visible: boolean;
   heading: string;
   subheading: string;
@@ -39,6 +46,7 @@ export interface LPSettings {
   videos: LPVideo[];           // max 30
   activities: LPActivity[];    // 活動内容ブロック
   testimonials: LPTestimonial[]; // 口コミ
+  gallery: LPGalleryPhoto[];   // 写真ギャラリー（推奨 6〜12 枚）
   concepts: string[];          // コンセプト文言リスト
   ctaButtonText: string;       // CTAボタンのテキスト（全セクション共通）
   ctaLoginButtonText: string;  // ログインボタンのテキスト（空の場合は非表示）
@@ -63,6 +71,7 @@ export const DEFAULT_LP_SETTINGS: LPSettings = {
     { id: "act_5", title: "コミュニティ", description: "「今のままで最高」を分かち合える横のつながり。", imageUrl: "" },
   ],
   testimonials: [],
+  gallery: [],
   videos: [],
   sections: [
     {
@@ -104,6 +113,17 @@ export const DEFAULT_LP_SETTINGS: LPSettings = {
       visible: true,
       heading: "活動内容",
       subheading: "",
+      body: "",
+      bgColor: "",
+      bgImageUrl: "",
+      imageUrl: "",
+    },
+    {
+      id: "gallery",
+      type: "gallery",
+      visible: false,
+      heading: "ギャラリー",
+      subheading: "コミュニティの様子をお届けします。",
       body: "",
       bgColor: "",
       bgImageUrl: "",
