@@ -332,7 +332,7 @@ export default async function LPPage() {
                   key={tm.id}
                   className="bg-[var(--lm-card-bg)] rounded-2xl p-6 border border-[var(--lm-border)] flex flex-col gap-4"
                 >
-                  <p className="text-sm text-[var(--lm-muted)] leading-relaxed flex-1">"{tm.body}"</p>
+                  <p className="text-sm text-[var(--lm-muted)] leading-relaxed flex-1">&ldquo;{tm.body}&rdquo;</p>
                   <div className="flex items-center gap-3">
                     {tm.avatarUrl ? (
                       /* eslint-disable-next-line @next/next/no-img-element */
