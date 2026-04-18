@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Noto+Serif+JP:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-noto-sans-jp), 'Noto Sans JP', sans-serif;
+  --font-serif: 'Noto Serif JP', serif;
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-serif);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Living Me custom colors */
+  --color-cream: #FFF8F0;
+  --color-warm-white: #FEFCF8;
+  --color-terracotta: #C07052;
+  --color-sage: #7A9E7E;
+  --color-brown: #6B4F3A;
+  --color-light-sage: #EFF4EF;
+}
+
+:root {
+  /* Living Me テーマカラー変数（管理画面から動的に上書き可能） */
+  --lm-bg: #FFF8F0;
+  --lm-card-bg: #FEFCF8;
+  --lm-primary: #6B4F3A;
+  --lm-accent: #C07052;
+  --lm-secondary: #7A9E7E;
+  --lm-muted: #9a8070;
+  --lm-border: #e8ddd5;
+
+  --background: #FFF8F0;
+  --foreground: #6B4F3A;
+  --card: #FEFCF8;
+  --card-foreground: #6B4F3A;
+  --popover: #FEFCF8;
+  --popover-foreground: #6B4F3A;
+  --primary: #C07052;
+  --primary-foreground: #FEFCF8;
+  --secondary: #EFF4EF;
+  --secondary-foreground: #6B4F3A;
+  --muted: #EFF4EF;
+  --muted-foreground: #9a8070;
+  --accent: #7A9E7E;
+  --accent-foreground: #FEFCF8;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #e8ddd5;
+  --input: #e8ddd5;
+  --ring: #C07052;
+  --chart-1: #C07052;
+  --chart-2: #7A9E7E;
+  --chart-3: #6B4F3A;
+  --chart-4: #EFF4EF;
+  --chart-5: #FFF8F0;
+  --radius: 0.75rem;
+  --sidebar: #FEFCF8;
+  --sidebar-foreground: #6B4F3A;
+  --sidebar-primary: #C07052;
+  --sidebar-primary-foreground: #FEFCF8;
+  --sidebar-accent: #EFF4EF;
+  --sidebar-accent-foreground: #6B4F3A;
+  --sidebar-border: #e8ddd5;
+  --sidebar-ring: #C07052;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: #C07052;
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: #7A9E7E;
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: #C07052;
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: #C07052;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: #C07052;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Noto Serif JP', serif;
+    text-wrap: balance;
+  }
+  /* prefers-reduced-motion: アニメーション・トランジションを無効化 */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

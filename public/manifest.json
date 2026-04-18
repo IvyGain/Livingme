@@ -1,0 +1,18 @@
+{
+  "name": "Living Me",
+  "short_name": "Living Me",
+  "description": "リビングのような温かさ・自然・安心感のある会員コミュニティ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF8F0",
+  "theme_color": "#C07052",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["lifestyle", "social"]
+}

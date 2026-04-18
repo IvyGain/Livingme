@@ -1,0 +1,227 @@
+version: "1.0.0"
+generated_at: "2026-03-20T00:00:00Z"
+source: "docs/requirements/design-requirements.md"
+project: "Living Me"
+
+aesthetic:
+  direction: warm-intimate
+  mood: nurturing
+  differentiation: "リビングのような温かさと安心感。呼吸できる余白。ただいまと感じられる居場所。"
+
+colors:
+  primary: "#8B5E3C"         # Warm Chestnut — CTAボタン・主要アクセント
+  secondary: "#F5EDD8"       # Cream Linen — 背景・カード
+  accent: "#C4714A"          # Terracotta — ハイライト・インタラクション
+  accent_dark: "#D4845A"     # Terracotta Dark — ダークモードアクセント
+  muted: "#B8A99A"           # Warm Taupe — ボーダー・装飾のみ（テキストに使用禁止）
+  subtle: "#FAF6EE"          # Ivory Mist — セクション背景
+
+  text:
+    primary: "#3D2B1F"       # ダークブラウン — 見出し・本文
+    secondary: "#7A6155"     # ミドルブラウン — 補助テキスト・キャプション
+    muted: "#B8A99A"         # ライトブラウン — プレースホルダー・無効
+
+  background:
+    light: "#FDF9F3"         # ページ背景（ライト）
+    dark: "#2A1F18"          # ページ背景（ダーク）
+    surface: "#FFFFFF"       # カード・サーフェス
+    surface_alt: "#F5EDD8"   # 代替サーフェス
+    surface_dark: "#3D2B1F"  # ダークモードカード
+
+  border:
+    light: "#B8A99A"
+    dark: "#5A4035"
+
+  status:
+    success: "#6B8F5E"       # 承認・完了（グリーン系）
+    warning: "#C4914A"       # 注意・期限（アンバー系）
+    error: "#A84242"         # エラー・失効（ダルレッド）
+    info: "#4A7A8F"          # 情報・案内（ブルーグレー）
+
+typography:
+  heading:
+    family_ja: "Noto Serif JP"
+    family_en: "Playfair Display"
+    fallback: "Georgia, serif"
+    weights: [600, 700]
+    sizes:
+      display: "3.5rem"      # 56px — ヒーロータイトル
+      h1: "2.5rem"           # 40px — ページタイトル
+      h2: "2rem"             # 32px — セクション見出し
+      h3: "1.5rem"           # 24px — カード見出し
+      h4: "1.25rem"          # 20px — サブ見出し
+
+  body:
+    family_ja: "Noto Sans JP"
+    family_en: "Lato"
+    fallback: "Hiragino Kaku Gothic ProN, sans-serif"
+    weights: [400, 500]
+    sizes:
+      large: "1.125rem"      # 18px — リード文
+      regular: "1rem"        # 16px — 本文
+      small: "0.875rem"      # 14px — 補助テキスト
+      caption: "0.75rem"     # 12px — キャプション・ラベル
+
+  line_height:
+    tight: 1.25
+    normal: 1.6
+    relaxed: 1.8             # 和文テキスト向け
+
+  forbidden_fonts:
+    - "Inter"
+    - "Roboto"
+    - "Arial"
+
+spacing:
+  unit: "8px"
+  scale:
+    xs: "4px"
+    sm: "8px"
+    md: "16px"
+    lg: "24px"
+    xl: "32px"
+    2xl: "48px"
+    3xl: "64px"
+    4xl: "96px"
+
+borders:
+  radius:
+    none: "0"
+    sm: "4px"
+    md: "8px"
+    lg: "12px"
+    xl: "16px"
+    2xl: "24px"
+    full: "9999px"
+  width:
+    thin: "1px"
+    medium: "2px"
+
+shadows:
+  sm: "0 1px 3px rgba(61, 43, 31, 0.06)"
+  md: "0 2px 8px rgba(61, 43, 31, 0.08)"
+  lg: "0 4px 16px rgba(61, 43, 31, 0.10)"
+  # 禁止: 過剰なドロップシャドウの積み重ね
+
+components:
+  library: "shadcn/ui"
+  styling: "tailwind"
+  animation: "motion/react"
+  icons: "lucide-react"
+  utility: "cn (clsx + tailwind-merge)"
+
+  button:
+    variants:
+      primary:
+        bg: "#8B5E3C"
+        text: "#FFFFFF"
+        hover_bg: "#7A5232"
+        radius: "full"       # 丸みのあるボタン
+      secondary:
+        bg: "#F5EDD8"
+        text: "#8B5E3C"
+        border: "#B8A99A"
+        hover_bg: "#EDE4CE"
+        radius: "full"
+      ghost:
+        bg: "transparent"
+        text: "#7A6155"
+        hover_bg: "#F5EDD8"
+        radius: "full"
+      destructive:
+        bg: "#A84242"
+        text: "#FFFFFF"
+        radius: "full"
+    min_height: "44px"       # タッチターゲット確保
+
+  card:
+    bg_light: "#FFFFFF"
+    bg_alt: "#F5EDD8"
+    border: "1px solid #B8A99A"
+    border_none: true        # ボーダーなしパターンも使用
+    radius: "16px"
+    shadow: "0 2px 8px rgba(61, 43, 31, 0.08)"
+    padding: "24px"
+
+  input:
+    border: "1px solid #B8A99A"
+    focus_border: "#8B5E3C"
+    radius: "12px"
+    bg: "#FFFFFF"
+    placeholder_color: "#B8A99A"
+    min_height: "44px"
+
+  navigation:
+    mobile: "bottom-bar"
+    tablet: "sidebar"
+    desktop: "sidebar"
+    sidebar_width: "280px"
+
+responsive:
+  mobile_first: true
+  breakpoints:
+    sm: "640px"
+    md: "768px"
+    lg: "1024px"
+    xl: "1280px"
+    2xl: "1536px"
+  max_content_width: "1024px"   # max-w-5xl
+
+animation:
+  duration:
+    instant: "100ms"
+    fast: "150ms"
+    normal: "200ms"          # 最大値
+  easing:
+    default: "ease-out"
+    spring: "cubic-bezier(0.34, 1.56, 0.64, 1)"
+  allowed_properties:
+    - "transform"
+    - "opacity"
+  forbidden_properties:
+    - "width"
+    - "height"
+    - "margin"
+    - "padding"
+    - "top"
+    - "left"
+  reduced_motion: true       # prefers-reduced-motion 対応必須
+
+dark_mode:
+  supported: true
+  strategy: "class"          # Tailwind class strategy
+  system_preference: true
+  manual_toggle: true
+
+quality:
+  lighthouse:
+    performance: 90
+    accessibility: 100
+    best_practices: 100
+    seo: 100
+  wcag_level: "AA"
+  contrast_ratio_normal: 4.5
+  contrast_ratio_large: 3.0
+  touch_target_min: "44px"
+
+media:
+  thumbnail_ratio_video: "16/9"
+  thumbnail_ratio_column: "3/2"
+  format_priority: ["webp", "jpeg"]
+  lazy_loading: true
+
+anti_patterns:
+  # UXレビュー指摘: #B8A99A はテキストに使用禁止（コントラスト比 2.6:1 で WCAG 不合格）
+  color_restriction: "#B8A99A (Warm Taupe) はボーダー・装飾・プレースホルダーのみ使用可"
+  forbidden_fonts: ["Inter", "Roboto", "Arial"]
+  forbidden_colors:
+    - "紫グラデーション on 白背景"
+    - "ビビッドなブルー系ビジネスカラー"
+  forbidden_effects:
+    - "グロー効果"
+    - "過剰なドロップシャドウ"
+  forbidden_layouts:
+    - "予測可能な等幅グリッド"
+    - "コンテンツの詰め込み"
+  forbidden_animations:
+    - "レイアウトプロパティのアニメーション"
