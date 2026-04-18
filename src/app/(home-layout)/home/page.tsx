@@ -104,6 +104,39 @@ export default async function MemberHomePage() {
             />
           )}
 
+          {/* エネルギーシェア プレビュー（マヤ暦 + タイトル + 続きを見る） */}
+          {isVisible("today") && todayContent && (todayContent.title || todayContent.mayanInfo) && (
+            <div
+              className="rounded-xl border p-5"
+              style={{ borderColor: "var(--lm-border)", backgroundColor: "var(--lm-card-bg)" }}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {todayContent.mayanBlackKin && (
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#1a1a1a] text-white text-[10px] font-bold">
+                    黒
+                  </span>
+                )}
+                {todayContent.moonPhase === "full" && <span className="text-lg">🌝</span>}
+                {todayContent.moonPhase === "new" && <span className="text-lg">🌚</span>}
+                <p className="text-xs" style={{ color: "var(--lm-muted)" }}>
+                  {todayContent.mayanInfo}
+                </p>
+              </div>
+              {todayContent.title && (
+                <p className="text-base font-medium leading-relaxed mb-3" style={{ color: "var(--lm-primary)" }}>
+                  {todayContent.title}
+                </p>
+              )}
+              <Link
+                href="/energy"
+                className="inline-flex items-center gap-1 text-sm transition-colors hover:opacity-80"
+                style={{ color: "var(--lm-accent)" }}
+              >
+                続きを見る →
+              </Link>
+            </div>
+          )}
+
           {/* 今日のジャーナリングテーマ */}
           {isVisible("today") && todayContent?.journalingTheme && (
             <div

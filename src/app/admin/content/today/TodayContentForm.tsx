@@ -17,6 +17,10 @@ export function TodayContentForm({ initialData, defaultDate }: TodayContentFormP
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isPublished, setIsPublished] = useState(initialData?.isPublished ?? true);
+  const [blackKin, setBlackKin] = useState(initialData?.mayanBlackKin ?? false);
+  const [moonPhase, setMoonPhase] = useState<"" | "full" | "new">(
+    initialData?.moonPhase ?? "",
+  );
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,6 +36,13 @@ export function TodayContentForm({ initialData, defaultDate }: TodayContentFormP
       journalingTheme: formData.get("journalingTheme") as string,
       morningNote: formData.get("morningNote") as string,
       isPublished,
+      mayanInfo: formData.get("mayanInfo") as string,
+      mayanBlackKin: blackKin,
+      moonPhase: moonPhase === "" ? null : moonPhase,
+      title: formData.get("title") as string,
+      column: formData.get("column") as string,
+      symbolNote: formData.get("symbolNote") as string,
+      todayPoint: formData.get("todayPoint") as string,
     });
 
     if (result.success) {
@@ -75,19 +86,115 @@ export function TodayContentForm({ initialData, defaultDate }: TodayContentFormP
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="energyShare" className="text-sm font-medium text-gray-700">
+      {/* ── エネルギーシェア構造化入力 ─────────────────── */}
+      <fieldset className="space-y-4 border border-gray-200 rounded-lg p-4">
+        <legend className="text-sm font-semibold text-[#6B4F3A] px-2">
           エネルギーシェア
-        </Label>
-        <Textarea
-          id="energyShare"
-          name="energyShare"
-          defaultValue={initialData?.energyShare ?? ""}
-          rows={4}
-          placeholder="今日のエネルギーメッセージ..."
-          className="resize-none"
-        />
-      </div>
+        </legend>
+
+        <div className="space-y-2">
+          <Label htmlFor="mayanInfo" className="text-sm font-medium text-gray-700">
+            マヤ暦情報
+          </Label>
+          <Textarea
+            id="mayanInfo"
+            name="mayanInfo"
+            defaultValue={initialData?.mayanInfo ?? ""}
+            rows={2}
+            placeholder={"K〇〇 太陽の紋章 / ウェイブスペル / 音〇〇"}
+            className="resize-none"
+          />
+          <div className="flex items-center gap-4 pt-1">
+            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={blackKin}
+                onChange={(e) => setBlackKin(e.target.checked)}
+                className="rounded"
+              />
+              <span>黒キン</span>
+            </label>
+            <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+              <span>月相</span>
+              <select
+                value={moonPhase}
+                onChange={(e) => setMoonPhase(e.target.value as "" | "full" | "new")}
+                className="h-8 px-2 text-sm border border-gray-200 rounded"
+              >
+                <option value="">—</option>
+                <option value="full">🌝 満月</option>
+                <option value="new">🌚 新月</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="title" className="text-sm font-medium text-gray-700">
+            今日のテーマ（タイトル）
+          </Label>
+          <Input
+            id="title"
+            name="title"
+            defaultValue={initialData?.title ?? ""}
+            placeholder="例: 受け取る勇気"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="column" className="text-sm font-medium text-gray-700">
+            コラム（テーマ解説）
+          </Label>
+          <Textarea
+            id="column"
+            name="column"
+            defaultValue={initialData?.column ?? ""}
+            rows={5}
+            placeholder="テーマの解説文..."
+            className="resize-none"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="symbolNote" className="text-sm font-medium text-gray-700">
+            今日の紋章プチ解説
+          </Label>
+          <Textarea
+            id="symbolNote"
+            name="symbolNote"
+            defaultValue={initialData?.symbolNote ?? ""}
+            rows={3}
+            className="resize-none"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="todayPoint" className="text-sm font-medium text-gray-700">
+            💫 今日のポイント
+          </Label>
+          <Textarea
+            id="todayPoint"
+            name="todayPoint"
+            defaultValue={initialData?.todayPoint ?? ""}
+            rows={3}
+            className="resize-none"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="energyShare" className="text-sm font-medium text-gray-700">
+            自由記述（追加メッセージ）
+          </Label>
+          <Textarea
+            id="energyShare"
+            name="energyShare"
+            defaultValue={initialData?.energyShare ?? ""}
+            rows={3}
+            placeholder="構造化フィールドで表現しきれないメッセージがあればここに..."
+            className="resize-none"
+          />
+        </div>
+      </fieldset>
 
       <div className="space-y-2">
         <Label htmlFor="journalingTheme" className="text-sm font-medium text-gray-700">
