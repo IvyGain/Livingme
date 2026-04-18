@@ -1,0 +1,48 @@
+name: 🐞 Bug
+description: バグ報告
+title: "[Bug] "
+labels: ["type:bug", "state:pending"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 再現手順
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待される動作
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: 環境
+      description: OS / ブラウザ / Node.js バージョン等
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 深刻度
+      options:
+        - severity:Sev.1-Critical
+        - severity:Sev.2-High
+        - severity:Sev.3-Medium
+        - severity:Sev.4-Low
+      default: 2

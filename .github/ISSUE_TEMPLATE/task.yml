@@ -1,0 +1,29 @@
+name: 🧩 Task
+description: リファクタ・保守・調査などの作業タスク
+title: "[Task] "
+labels: ["type:refactor", "state:pending"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: やること
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 理由 / 背景
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: スコープ
+      description: 対象ファイル / 影響範囲
+  - type: textarea
+    id: dod
+    attributes:
+      label: 完了条件
+      value: |
+        - [ ]
+        - [ ]
