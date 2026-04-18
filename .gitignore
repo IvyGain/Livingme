@@ -69,7 +69,6 @@ src/lib/db/
 .mock-logs/
 !.mock-logs/.gitkeep
 *.tgz
-.npmrc
 !logs/.gitkeep
 gitleaks*.json
 gitleaks*.log
