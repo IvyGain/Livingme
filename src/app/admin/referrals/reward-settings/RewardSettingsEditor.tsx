@@ -14,6 +14,7 @@ const STATUS_LABELS: Record<keyof RewardSettings, string> = {
 export function RewardSettingsEditor({ initialSettings }: { initialSettings: RewardSettings }) {
   const [settings, setSettings] = useState<RewardSettings>(initialSettings);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function update(
@@ -27,13 +28,34 @@ export function RewardSettingsEditor({ initialSettings }: { initialSettings: Rew
       [status]: { ...prev[status], [field]: isNaN(num) ? 0 : num },
     }));
     setSaved(false);
+    setError(null);
+  }
+
+  function updateMaxReferrals(status: keyof RewardSettings, value: string) {
+    setSettings((prev) => {
+      if (value === "") {
+        return { ...prev, [status]: { ...prev[status], maxReferrals: null } };
+      }
+      const num = parseInt(value, 10);
+      return {
+        ...prev,
+        [status]: { ...prev[status], maxReferrals: isNaN(num) ? null : Math.max(0, num) },
+      };
+    });
+    setSaved(false);
+    setError(null);
   }
 
   function handleSave() {
     startTransition(async () => {
-      await saveRewardSettings(settings);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      const result = await saveRewardSettings(settings);
+      if (result.success) {
+        setError(null);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        setError(result.error ?? "保存に失敗しました");
+      }
     });
   }
 
@@ -53,6 +75,9 @@ export function RewardSettingsEditor({ initialSettings }: { initialSettings: Rew
             </th>
             <th className="py-2 px-3 text-xs font-medium text-gray-500 w-36 text-right">
               継続報酬 / 月（円）
+            </th>
+            <th className="py-2 px-3 text-xs font-medium text-gray-500 w-36 text-right">
+              紹介人数上限
             </th>
           </tr>
         </thead>
@@ -88,15 +113,33 @@ export function RewardSettingsEditor({ initialSettings }: { initialSettings: Rew
                   />
                 </div>
               </td>
+              <td className="py-3 px-3">
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={settings[status].maxReferrals ?? ""}
+                  placeholder="無制限"
+                  onChange={(e) => updateMaxReferrals(status, e.target.value)}
+                  className={inputCls}
+                />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-        <strong>入会時報酬</strong>: 新規会員が入会した際に紹介者へ支払われる報酬<br />
-        <strong>継続報酬</strong>: 会員が継続している間、毎月紹介者へ支払われる報酬
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 space-y-1">
+        <p><strong>入会時報酬</strong>: 新規会員が入会した際に紹介者へ支払われる報酬</p>
+        <p><strong>継続報酬</strong>: 会員が継続している間、毎月紹介者へ支払われる報酬</p>
+        <p><strong>紹介人数上限</strong>: そのステータスで受け入れ可能な紹介者数。空欄＝無制限。既に上限を超えて紹介しているメンバーがいる場合、上限を下回る値には保存できません。</p>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <button

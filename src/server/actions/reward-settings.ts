@@ -17,6 +17,8 @@ export async function getRewardSettings(): Promise<RewardSettings> {
     });
     if (row?.value) {
       const parsed = JSON.parse(row.value);
+      // Merge over defaults so older records (without maxReferrals)
+      // transparently get null (= unlimited).
       return {
         FREE:     { ...DEFAULT_REWARD_SETTINGS.FREE,     ...parsed.FREE },
         REFERRAL: { ...DEFAULT_REWARD_SETTINGS.REFERRAL, ...parsed.REFERRAL },
@@ -29,9 +31,40 @@ export async function getRewardSettings(): Promise<RewardSettings> {
   return DEFAULT_REWARD_SETTINGS;
 }
 
-export async function saveRewardSettings(settings: RewardSettings): Promise<void> {
+export async function saveRewardSettings(
+  settings: RewardSettings,
+): Promise<{ success: boolean; error?: string }> {
   const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") redirect("/");
+
+  // 人数上限を下げる場合、現在の紹介者数を下回っていないか検証
+  const statuses: (keyof RewardSettings)[] = ["FREE", "REFERRAL", "PARTNER"];
+  for (const status of statuses) {
+    const cap = settings[status].maxReferrals;
+    if (cap === null) continue;
+    if (!Number.isInteger(cap) || cap < 0) {
+      return {
+        success: false,
+        error: `${status}: 人数上限は 0 以上の整数で指定してください`,
+      };
+    }
+
+    const ambassadorType = status === "FREE" ? "FREE" : status;
+    const usersOverCap = await prisma.user.findMany({
+      where: { ambassadorType: ambassadorType as "FREE" | "REFERRAL" | "PARTNER" },
+      select: { _count: { select: { referrals: true } } },
+    });
+    const maxInUse = usersOverCap.reduce(
+      (max, u) => Math.max(max, u._count.referrals),
+      0,
+    );
+    if (cap < maxInUse) {
+      return {
+        success: false,
+        error: `${status}: 既に ${maxInUse} 名紹介しているメンバーがいます。上限は ${maxInUse} 以上に設定してください。`,
+      };
+    }
+  }
 
   await prisma.setting.upsert({
     where: { key: REWARD_SETTINGS_KEY },
@@ -45,4 +78,5 @@ export async function saveRewardSettings(settings: RewardSettings): Promise<void
   });
 
   revalidatePath("/admin/referrals");
+  return { success: true };
 }
