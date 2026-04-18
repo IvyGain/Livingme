@@ -4,6 +4,8 @@ import { format, startOfDay } from "date-fns";
 import { ja } from "date-fns/locale";
 import { getJournals } from "@/server/actions/journals";
 import { getTodayThemeForDate } from "@/server/actions/today";
+import { calcJournalStats } from "@/lib/journal-stats";
+import { JournalCalendar } from "@/components/member/JournalCalendar";
 
 async function getTodayTheme() {
   const todayStr = format(startOfDay(new Date()), "yyyy-MM-dd");
@@ -23,6 +25,8 @@ export default async function JournalPage() {
   const hasTodayEntry = journals.some(
     (j) => startOfDay(j.date).getTime() === today.getTime()
   );
+  const journalDates = journals.map((j) => j.date);
+  const { total, streak } = calcJournalStats(journalDates);
 
   return (
     <div className="space-y-6">
@@ -30,6 +34,25 @@ export default async function JournalPage() {
         <h1 className="text-2xl font-light text-[#6B4F3A] mb-1">ジャーナリング</h1>
         <p className="text-sm text-[#9a8070]">心の声を書き留めましょう</p>
       </div>
+
+      {/* Personal stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-[#FDF3EE] border border-[#f0d8cc] rounded-2xl p-4">
+          <p className="text-[10px] text-[#9a8070] mb-1">🌟 連続日数</p>
+          <p className="text-3xl font-light text-[#C07052] tabular-nums">
+            {streak}<span className="text-sm ml-1">日</span>
+          </p>
+        </div>
+        <div className="bg-[#EFF4EF] border border-[#d0e4d0] rounded-2xl p-4">
+          <p className="text-[10px] text-[#9a8070] mb-1">🌟 トータル記録</p>
+          <p className="text-3xl font-light text-[#7A9E7E] tabular-nums">
+            {total}<span className="text-sm ml-1">件</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Calendar */}
+      <JournalCalendar journalDates={journalDates} />
 
       {/* Today's prompt */}
       <div className="bg-[#EFF4EF] rounded-2xl p-6 space-y-3">
