@@ -7,7 +7,32 @@ import { getSetting } from "@/lib/settings";
 import { createRecord, updateRecord, deleteRecord, getRecord, listAllRecords } from "@/lib/lark";
 import type { LarkRecord } from "@/lib/lark";
 import { prisma } from "@/lib/prisma";
-import type { LarkEvent, RegistrationField } from "@/lib/content-types";
+import { EventType, type LarkEvent, type RegistrationField } from "@/lib/content-types";
+
+const EVENT_TYPE_VALUES = new Set<string>(Object.values(EventType));
+
+/**
+ * Lark のセル値はプリミティブ（string/number/bool）の他に
+ * Select 型 ({text, value})、人物型 ({name, id}) などのオブジェクトでも届く。
+ * eventType のような enum 値を堅牢に取り出すヘルパ。
+ */
+function extractEventType(raw: unknown): LarkEvent["eventType"] {
+  if (typeof raw === "string" && EVENT_TYPE_VALUES.has(raw)) {
+    return raw as LarkEvent["eventType"];
+  }
+  if (raw && typeof raw === "object") {
+    const r = raw as Record<string, unknown>;
+    const candidates = [r.value, r.text, r.name, r.label];
+    for (const c of candidates) {
+      if (typeof c === "string" && EVENT_TYPE_VALUES.has(c)) {
+        return c as LarkEvent["eventType"];
+      }
+    }
+  }
+  // 値が欠損 or 未知 → ルールとして「オンラインイベント」を仮置きするが
+  // 旧実装のようにオフライン入力を塗り潰さないよう、最も害の少ない既定として扱う。
+  return EventType.ONLINE_EVENT;
+}
 
 const eventSchema = z.object({
   title:              z.string().min(1, "タイトルは必須です"),
@@ -66,7 +91,7 @@ function parseRecord(record: LarkRecord): LarkEvent {
     id:                 record.record_id,
     title:              String(f.title ?? ""),
     description:        String(f.description ?? "") || null,
-    eventType:          (String(f.eventType ?? "ONLINE_EVENT")) as LarkEvent["eventType"],
+    eventType:          extractEventType(f.eventType),
     startsAt:           startsAtStr ? new Date(startsAtStr) : new Date(),
     endsAt:             endsAtStr ? new Date(endsAtStr) : null,
     location:           String(f.location ?? "") || null,

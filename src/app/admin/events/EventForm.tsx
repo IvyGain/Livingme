@@ -13,9 +13,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EventType } from "@/lib/content-types";
-import { createEvent } from "@/server/actions/events";
+import { createEvent, updateEvent } from "@/server/actions/events";
 import type { RegistrationField } from "@/lib/content-types";
 import { useRouter } from "next/navigation";
+
+export interface EventFormInitialValues {
+  id?: string;
+  title?: string;
+  description?: string | null;
+  eventType?: EventType;
+  startsAt?: string;
+  endsAt?: string;
+  location?: string | null;
+  meetingUrl?: string | null;
+  isPublished?: boolean;
+  registrationEnabled?: boolean;
+  registrationFields?: RegistrationField[];
+}
 
 const eventTypeOptions = [
   { value: EventType.MORNING_SESSION, label: "朝会" },
@@ -43,15 +57,22 @@ function newField(): RegistrationField {
   };
 }
 
-export function EventForm() {
+export function EventForm({ initial }: { initial?: EventFormInitialValues } = {}) {
   const router = useRouter();
+  const isEdit = Boolean(initial?.id);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
-  const [eventType, setEventType] = useState<EventType>(EventType.MORNING_SESSION);
-  const [registrationEnabled, setRegistrationEnabled] = useState(false);
-  const [fields, setFields] = useState<RegistrationField[]>([]);
+  const [isPublished, setIsPublished] = useState(Boolean(initial?.isPublished));
+  const [eventType, setEventType] = useState<EventType>(
+    initial?.eventType ?? EventType.MORNING_SESSION,
+  );
+  const [registrationEnabled, setRegistrationEnabled] = useState(
+    Boolean(initial?.registrationEnabled),
+  );
+  const [fields, setFields] = useState<RegistrationField[]>(
+    initial?.registrationFields ?? [],
+  );
 
   function addField() {
     setFields((prev) => [...prev, newField()]);
@@ -76,7 +97,7 @@ export function EventForm() {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    const result = await createEvent({
+    const payload = {
       title: formData.get("title") as string,
       description: formData.get("description") as string,
       eventType,
@@ -87,16 +108,25 @@ export function EventForm() {
       isPublished,
       registrationEnabled,
       registrationFields: registrationEnabled ? fields : [],
-    });
+    };
+
+    const result = isEdit && initial?.id
+      ? await updateEvent(initial.id, payload)
+      : await createEvent(payload);
 
     if (result.success) {
       setSuccess(true);
-      form.reset();
-      setFields([]);
-      setRegistrationEnabled(false);
-      router.refresh();
+      if (isEdit) {
+        router.push("/admin/events");
+        router.refresh();
+      } else {
+        form.reset();
+        setFields([]);
+        setRegistrationEnabled(false);
+        router.refresh();
+      }
     } else {
-      setError(result.error ?? "作成に失敗しました");
+      setError(result.error ?? (isEdit ? "更新に失敗しました" : "作成に失敗しました"));
     }
 
     setIsLoading(false);
@@ -111,7 +141,7 @@ export function EventForm() {
       )}
       {success && (
         <div className="p-3 bg-green-50 text-green-700 border border-green-200 rounded-lg text-sm">
-          イベントを作成しました
+          {isEdit ? "イベントを更新しました" : "イベントを作成しました"}
         </div>
       )}
 
@@ -123,6 +153,7 @@ export function EventForm() {
             name="title"
             required
             placeholder="イベントタイトル"
+            defaultValue={initial?.title ?? ""}
           />
         </div>
 
@@ -151,6 +182,7 @@ export function EventForm() {
             id="location"
             name="location"
             placeholder="Zoom / 東京..."
+            defaultValue={initial?.location ?? ""}
           />
         </div>
 
@@ -161,6 +193,7 @@ export function EventForm() {
             name="startsAt"
             type="datetime-local"
             required
+            defaultValue={initial?.startsAt ?? ""}
           />
         </div>
 
@@ -170,6 +203,7 @@ export function EventForm() {
             id="endsAt"
             name="endsAt"
             type="datetime-local"
+            defaultValue={initial?.endsAt ?? ""}
           />
         </div>
 
@@ -180,6 +214,7 @@ export function EventForm() {
             name="meetingUrl"
             type="url"
             placeholder="https://zoom.us/..."
+            defaultValue={initial?.meetingUrl ?? ""}
           />
         </div>
 
@@ -190,6 +225,7 @@ export function EventForm() {
             name="description"
             rows={2}
             placeholder="イベントの説明..."
+            defaultValue={initial?.description ?? ""}
           />
         </div>
       </div>
@@ -335,7 +371,13 @@ export function EventForm() {
         disabled={isLoading}
         className="bg-[#C07052] hover:bg-[#a85e42] text-white"
       >
-        {isLoading ? "作成中..." : "イベントを作成"}
+        {isLoading
+          ? isEdit
+            ? "更新中..."
+            : "作成中..."
+          : isEdit
+            ? "イベントを更新"
+            : "イベントを作成"}
       </Button>
     </form>
   );

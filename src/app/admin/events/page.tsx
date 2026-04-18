@@ -109,7 +109,13 @@ export default async function EventsAdminPage() {
                           {event.isPublished ? "公開中" : "下書き"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-4 py-3 text-right whitespace-nowrap">
+                        <Link
+                          href={`/admin/events/${event.id}/edit`}
+                          className="inline-flex items-center gap-1 text-xs text-[#7A9E7E] hover:underline font-medium mr-3"
+                        >
+                          編集
+                        </Link>
                         <EventDeleteButton eventId={event.id} />
                       </td>
                     </tr>
