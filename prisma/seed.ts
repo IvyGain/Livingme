@@ -1,10 +1,15 @@
 import { PrismaClient, UserRole, ArchiveCategory, EventType } from "@prisma/client";
 import { addDays, subDays, startOfDay } from "date-fns";
+import { hashPassword } from "../src/lib/password";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Seeding database...");
+
+  // パスワードをハッシュ化（全アカウント共通: "password123"）
+  const hashedPassword = await hashPassword("password123");
+  console.log("Test password: password123");
 
   // Create test users
   const trialUser = await prisma.user.upsert({
@@ -13,6 +18,7 @@ async function main() {
     create: {
       email: "trial@example.com",
       name: "体験ユーザー",
+      password: hashedPassword,
       isActive: true,
       role: UserRole.MEMBER,
       joinedAt: new Date(),
@@ -25,6 +31,7 @@ async function main() {
     create: {
       email: "member@example.com",
       name: "通常会員",
+      password: hashedPassword,
       isActive: true,
       role: UserRole.MEMBER,
       joinedAt: subDays(new Date(), 30),
@@ -38,6 +45,7 @@ async function main() {
     create: {
       email: "inactive@example.com",
       name: "停止中ユーザー",
+      password: hashedPassword,
       isActive: false,
       role: UserRole.MEMBER,
       joinedAt: subDays(new Date(), 60),
@@ -51,6 +59,7 @@ async function main() {
     create: {
       email: "admin@example.com",
       name: "管理者",
+      password: hashedPassword,
       isActive: true,
       role: UserRole.ADMIN,
       joinedAt: subDays(new Date(), 90),
