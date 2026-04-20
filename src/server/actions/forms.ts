@@ -2,12 +2,32 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getFormDef } from "@/lib/form-defs";
+import { getFormDef, type FormDef } from "@/lib/form-defs";
 
 async function requireMember() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   return session;
+}
+
+async function resolveForm(
+  slug: string,
+): Promise<(FormDef & { larkTableId?: string | null }) | null> {
+  // DB の動的フォームを優先
+  const dynamic = await prisma.dynamicForm
+    .findUnique({ where: { slug } })
+    .catch(() => null);
+  if (dynamic && dynamic.isPublished) {
+    return {
+      slug: dynamic.slug,
+      title: dynamic.title,
+      description: dynamic.description,
+      fields: Array.isArray(dynamic.fields) ? (dynamic.fields as unknown as FormDef["fields"]) : [],
+      ambassadorOnly: dynamic.ambassadorOnly,
+      larkTableId: dynamic.larkTableId,
+    };
+  }
+  return getFormDef(slug) ?? null;
 }
 
 export async function submitForm(
@@ -16,7 +36,7 @@ export async function submitForm(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const session = await requireMember();
-    const form = getFormDef(slug);
+    const form = await resolveForm(slug);
     if (!form) return { success: false, error: "フォームが見つかりません" };
 
     if (form.ambassadorOnly) {
@@ -37,12 +57,14 @@ export async function submitForm(
     }
 
     // Lark Base に非同期保存（エラーは無視してUXをブロックしない）
+    const formLarkTableId = (form as { larkTableId?: string | null }).larkTableId;
     void (async () => {
       try {
         const { getSetting } = await import("@/lib/settings");
         const { createRecord } = await import("@/lib/lark");
         const appToken = await getSetting("LARK_BASE_APP_TOKEN");
-        const tableId = await getSetting("LARK_FORM_TABLE_ID");
+        const tableId =
+          formLarkTableId || (await getSetting("LARK_FORM_TABLE_ID"));
         if (appToken && tableId) {
           await createRecord(appToken, tableId, {
             formId: slug,

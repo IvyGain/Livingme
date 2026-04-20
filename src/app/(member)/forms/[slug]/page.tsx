@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getFormDef } from "@/lib/form-defs";
 import { FormRenderer } from "@/components/member/FormRenderer";
+import { getDynamicFormBySlug } from "@/server/actions/dynamic-forms";
 
 export default async function FormPage({
   params,
@@ -13,7 +14,20 @@ export default async function FormPage({
   if (!session?.user?.id) return null;
 
   const { slug } = await params;
-  const form = getFormDef(slug);
+
+  // DB の動的フォームを優先、なければ静的 FORM_DEFS にフォールバック
+  const dynamic = await getDynamicFormBySlug(slug).catch(() => null);
+  const isDynamic = !!(dynamic && dynamic.isPublished);
+  const form = isDynamic
+    ? {
+        slug: dynamic.slug,
+        title: dynamic.title,
+        description: dynamic.description,
+        fields: dynamic.fields,
+        ambassadorOnly: dynamic.ambassadorOnly,
+      }
+    : getFormDef(slug);
+
   if (!form) notFound();
 
   return (
@@ -32,7 +46,7 @@ export default async function FormPage({
         <p className="text-sm text-[#9a8070] mt-1 leading-relaxed">{form.description}</p>
       </div>
 
-      <FormRenderer form={form} />
+      <FormRenderer form={form} isDynamic={isDynamic} />
     </div>
   );
 }

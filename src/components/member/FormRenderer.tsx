@@ -4,12 +4,14 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { FormDef } from "@/lib/form-defs";
 import { submitForm } from "@/server/actions/forms";
+import { submitDynamicForm } from "@/server/actions/dynamic-forms";
 
 interface FormRendererProps {
   form: FormDef;
+  isDynamic?: boolean;
 }
 
-export function FormRenderer({ form }: FormRendererProps) {
+export function FormRenderer({ form, isDynamic = false }: FormRendererProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -23,7 +25,9 @@ export function FormRenderer({ form }: FormRendererProps) {
   function handleSubmit() {
     setError(null);
     startTransition(async () => {
-      const result = await submitForm(form.slug, values);
+      const result = isDynamic
+        ? await submitDynamicForm(form.slug, values)
+        : await submitForm(form.slug, values);
       if (result.success) {
         setSubmitted(true);
       } else {

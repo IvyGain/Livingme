@@ -4,19 +4,43 @@ import Link from "next/link";
 import Image from "next/image";
 import { FORM_DEFS } from "@/lib/form-defs";
 import { calcDaysSince } from "@/lib/membership-duration";
+import { listDynamicForms } from "@/server/actions/dynamic-forms";
 
 export default async function FormsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { ambassadorType: true, joinedAt: true, startDate: true, referrals: { select: { id: true } } },
-  });
+  const [user, dynamicForms] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { ambassadorType: true, joinedAt: true, startDate: true, referrals: { select: { id: true } } },
+    }),
+    listDynamicForms().catch(() => []),
+  ]);
 
   const isAmbassador = !!user?.ambassadorType;
   const membershipDays = calcDaysSince(user?.startDate, user?.joinedAt);
-  const availableForms = FORM_DEFS.filter((f) => {
+
+  const dynamicSlugs = new Set(
+    dynamicForms.filter((f) => f.isPublished).map((f) => f.slug),
+  );
+  const merged = [
+    ...dynamicForms
+      .filter((f) => f.isPublished)
+      .map((f) => ({
+        slug: f.slug,
+        title: f.title,
+        description: f.description,
+        ambassadorOnly: f.ambassadorOnly,
+      })),
+    ...FORM_DEFS.filter((f) => !dynamicSlugs.has(f.slug)).map((f) => ({
+      slug: f.slug,
+      title: f.title,
+      description: f.description,
+      ambassadorOnly: !!f.ambassadorOnly,
+    })),
+  ];
+  const availableForms = merged.filter((f) => {
     if (f.ambassadorOnly && !isAmbassador) return false;
     return true;
   });
