@@ -12,16 +12,17 @@ describe("lp-settings", () => {
   });
 
   describe("DEFAULT_LP_SETTINGS", () => {
-    test("sections に6つのセクションが存在する", () => {
-      expect(DEFAULT_LP_SETTINGS.sections).toHaveLength(6);
+    test("sections に7つのセクションが存在する", () => {
+      expect(DEFAULT_LP_SETTINGS.sections).toHaveLength(7);
     });
 
-    test("sections に hero, about, videos, activities, testimonials, cta が存在する", () => {
+    test("sections に hero, about, videos, activities, gallery, testimonials, cta が存在する", () => {
       const ids = DEFAULT_LP_SETTINGS.sections.map((s) => s.id);
       expect(ids).toContain("hero");
       expect(ids).toContain("about");
       expect(ids).toContain("videos");
       expect(ids).toContain("activities");
+      expect(ids).toContain("gallery");
       expect(ids).toContain("testimonials");
       expect(ids).toContain("cta");
     });
