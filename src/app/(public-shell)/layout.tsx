@@ -1,11 +1,14 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { HomeHeader } from "@/components/layout/HomeHeader";
 import { getHomeLayoutSettings, getNavItems } from "@/server/actions/home-layout";
 import { getColorScheme } from "@/lib/home-layout";
-import { HomeHeader } from "@/components/layout/HomeHeader";
-import { ChannelSidebar } from "@/components/layout/ChannelSidebar";
 
-export default async function HomeLayout({
+/**
+ * チャンネルサイドバーを表示しないシェル。
+ * 現在は /about (LivingMeとは) のみ。HomeHeader は共通。
+ */
+export default async function PublicShellLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -35,14 +38,11 @@ export default async function HomeLayout({
 
   return (
     <div
-      className="h-dvh flex flex-col overflow-hidden"
+      className="min-h-dvh flex flex-col"
       style={{ ...themeVars, backgroundColor: scheme.colors.background }}
     >
       <HomeHeader userName={session.user.name} isAdmin={isAdmin} navItems={navItems} />
-      <div className="flex flex-1 overflow-hidden">
-        <ChannelSidebar userName={session.user.name} />
-        {children}
-      </div>
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

@@ -1,10 +1,8 @@
-import { auth } from "@/lib/auth";
 import { TodayCard } from "@/components/member/TodayCard";
 import { ArchiveCard } from "@/components/member/ArchiveCard";
 import Link from "next/link";
 import { format, isToday, isTomorrow } from "date-fns";
 import { ja } from "date-fns/locale";
-import { getChannels } from "@/server/actions/chat";
 import { getTodayContentForMember } from "@/server/actions/today";
 import { getPublishedArchives } from "@/server/actions/archives";
 import { getUpcomingEventsForMember } from "@/server/actions/events";
@@ -21,14 +19,10 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 };
 
 export default async function MemberHomePage() {
-  const session = await auth();
-  const userName = session?.user?.name;
-
-  const [todayContent, archives, events, channels, { sections }] = await Promise.all([
+  const [todayContent, archives, events, { sections }] = await Promise.all([
     getTodayContentForMember().catch(() => null),
     getPublishedArchives(24).catch(() => [] as Awaited<ReturnType<typeof getPublishedArchives>>),
     getUpcomingEventsForMember(10).catch(() => [] as Awaited<ReturnType<typeof getUpcomingEventsForMember>>),
-    getChannels(),
     getHomeLayoutSettings(),
   ]);
 
@@ -39,55 +33,6 @@ export default async function MemberHomePage() {
 
   return (
     <>
-      {/* ── 左：チャンネル一覧 ─────────────────────────────── */}
-      {isVisible("chat") && (
-      <aside
-        className="w-52 flex-shrink-0 flex flex-col border-r overflow-y-auto hidden md:flex"
-        style={{ borderColor: "var(--lm-border)", backgroundColor: "var(--lm-card-bg)" }}
-      >
-        {/* Greeting */}
-        <div className="px-4 pt-5 pb-3">
-          <p className="text-sm font-medium" style={{ color: "var(--lm-primary)" }}>
-            {userName ? `${userName}さん` : "メンバー"}
-          </p>
-          <p className="text-xs mt-0.5" style={{ color: "var(--lm-muted)" }}>
-            今日も自分らしく
-          </p>
-        </div>
-
-        <div className="border-t mx-3" style={{ borderColor: "var(--lm-border)" }} />
-
-        {/* Channel list */}
-        <div className="flex-1 py-3">
-          <p
-            className="px-4 pb-1 text-xs font-semibold uppercase tracking-widest"
-            style={{ color: "var(--lm-muted)" }}
-          >
-            チャンネル
-          </p>
-          {channels.length === 0 ? (
-            <p className="px-4 py-2 text-xs" style={{ color: "var(--lm-muted)" }}>
-              チャンネルなし
-            </p>
-          ) : (
-            <nav className="space-y-0.5 px-2">
-              {channels.map((ch) => (
-                <Link
-                  key={ch.id}
-                  href={`/chat/${ch.id}`}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm transition-colors hover:opacity-80"
-                  style={{ color: "var(--lm-muted)" }}
-                >
-                  <span className="font-medium">#</span>
-                  <span className="truncate">{ch.name}</span>
-                </Link>
-              ))}
-            </nav>
-          )}
-        </div>
-      </aside>
-      )}
-
       {/* ── 中央：今日のコンテンツ + アーカイブ ─────────────── */}
       <main
         className="flex-1 min-w-0 overflow-y-auto"

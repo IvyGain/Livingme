@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { HomeHeader } from "@/components/layout/HomeHeader";
 import { MobileNav } from "@/components/layout/Sidebar";
+import { ChannelSidebar } from "@/components/layout/ChannelSidebar";
 import { getHomeLayoutSettings, getNavItems } from "@/server/actions/home-layout";
 import { getColorScheme } from "@/lib/home-layout";
 
@@ -21,7 +22,6 @@ export default async function MemberLayout({
 
   const isAdmin = session?.user?.role === "ADMIN";
 
-  // CSS変数を上書きするインラインスタイルを生成
   const themeVars = {
     "--lm-bg":       scheme.colors.background,
     "--lm-card-bg":  scheme.colors.cardBackground,
@@ -33,13 +33,17 @@ export default async function MemberLayout({
   } as React.CSSProperties;
 
   return (
-    <div className="min-h-dvh" style={{ ...themeVars, backgroundColor: scheme.colors.background }}>
+    <div
+      className="h-dvh flex flex-col overflow-hidden"
+      style={{ ...themeVars, backgroundColor: scheme.colors.background }}
+    >
       <HomeHeader userName={session?.user?.name} isAdmin={isAdmin} navItems={navItems} />
-      <main className="flex-1 min-w-0 pb-20 md:pb-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
+      <div className="flex flex-1 overflow-hidden">
+        <ChannelSidebar userName={session?.user?.name} />
+        <main className="flex-1 min-w-0 overflow-y-auto pb-20 md:pb-0">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
       <MobileNav />
     </div>
   );
