@@ -38,7 +38,7 @@ export const SETTING_META: Record<SettingKey, { label: string; isSecret: boolean
   UNIVAPAY_PRICE:       { label: "UnivaPay 価格 (円)",         isSecret: false, group: "UnivaPay" },
   LARK_APP_ID:                   { label: "Lark アプリID",                                              isSecret: false, group: "Lark" },
   LARK_APP_SECRET:               { label: "Lark アプリシークレット",                                        isSecret: true,  group: "Lark" },
-  LARK_BASE_APP_TOKEN:           { label: "Lark Base アプリトークン",                                       isSecret: false, group: "Lark" },
+  LARK_BASE_APP_TOKEN:           { label: "Lark Base アプリトークン",                                       isSecret: true,  group: "Lark" },
   LARK_API_BASE_URL:             { label: "Lark API ベースURL（デフォルト: https://open.larksuite.com）", isSecret: false, group: "Lark" },
   LARK_CHAT_CHANNEL_TABLE_ID:    { label: "Lark チャンネルテーブルID",                                     isSecret: false, group: "Lark" },
   LARK_CHAT_MESSAGE_TABLE_ID:    { label: "Lark メッセージテーブルID",                                     isSecret: false, group: "Lark" },

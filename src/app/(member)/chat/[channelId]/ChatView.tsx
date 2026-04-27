@@ -188,6 +188,12 @@ function ThreadPanel({ channelId, parentMessage, onClose, canWrite }: ThreadPane
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // IME 変換中（日本語入力で変換確定の Enter など）は送信しない。
+      // nativeEvent.isComposing が true の間と、IME による Enter の互換ガードとして
+      // keyCode 229 もチェックする。
+      if (e.nativeEvent.isComposing || e.key === "Process" || e.keyCode === 229) {
+        return;
+      }
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
@@ -351,6 +357,12 @@ export function ChatView({ channel, initialMessages, canWrite }: Props) {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // IME 変換中（日本語入力で変換確定の Enter など）は送信しない。
+      // nativeEvent.isComposing が true の間と、IME による Enter の互換ガードとして
+      // keyCode 229 もチェックする。
+      if (e.nativeEvent.isComposing || e.key === "Process" || e.keyCode === 229) {
+        return;
+      }
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();

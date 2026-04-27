@@ -183,6 +183,25 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+/// 管理画面から作成する動的な申請フォーム定義。
+/// fields は JSON（{ name, label, type, required, options? }[] 形式）。
+/// larkTableId は任意：設定されていればそのテーブルに保存される。
+model DynamicForm {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  title          String
+  description    String   @db.Text
+  fields         Json
+  ambassadorOnly Boolean  @default(false)
+  larkTableId    String?
+  isPublished    Boolean  @default(true)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isPublished])
+}
+
 model WithdrawalRequest {
   id          String           @id @default(cuid())
   userId      String

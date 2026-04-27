@@ -4,19 +4,43 @@ import Link from "next/link";
 import Image from "next/image";
 import { FORM_DEFS } from "@/lib/form-defs";
 import { calcDaysSince } from "@/lib/membership-duration";
+import { listDynamicForms } from "@/server/actions/dynamic-forms";
 
 export default async function FormsPage() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { ambassadorType: true, joinedAt: true, startDate: true, referrals: { select: { id: true } } },
-  });
+  const [user, dynamicForms] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { ambassadorType: true, joinedAt: true, startDate: true, referrals: { select: { id: true } } },
+    }),
+    listDynamicForms().catch(() => []),
+  ]);
 
   const isAmbassador = !!user?.ambassadorType;
   const membershipDays = calcDaysSince(user?.startDate, user?.joinedAt);
-  const availableForms = FORM_DEFS.filter((f) => {
+
+  const dynamicSlugs = new Set(
+    dynamicForms.filter((f) => f.isPublished).map((f) => f.slug),
+  );
+  const merged = [
+    ...dynamicForms
+      .filter((f) => f.isPublished)
+      .map((f) => ({
+        slug: f.slug,
+        title: f.title,
+        description: f.description,
+        ambassadorOnly: f.ambassadorOnly,
+      })),
+    ...FORM_DEFS.filter((f) => !dynamicSlugs.has(f.slug)).map((f) => ({
+      slug: f.slug,
+      title: f.title,
+      description: f.description,
+      ambassadorOnly: !!f.ambassadorOnly,
+    })),
+  ];
+  const availableForms = merged.filter((f) => {
     if (f.ambassadorOnly && !isAmbassador) return false;
     return true;
   });
@@ -99,22 +123,13 @@ export default async function FormsPage() {
         )}
       </div>
 
-      {/* Withdrawal section */}
-      <div className="pt-2">
-        <h2 className="text-sm font-medium text-[#6B4F3A] mb-3">その他</h2>
+      {/* Withdrawal — 目立たないテキストリンク */}
+      <div className="pt-8 mt-4 border-t border-[#f0ebe5] text-center">
         <Link
           href="/withdraw"
-          className="block bg-[#FEFCF8] border border-[#e8ddd5] rounded-2xl p-5 hover:border-[#C07052]/40 hover:shadow-sm transition-all group"
+          className="inline-block text-xs text-[#c0b0a0] hover:text-[#9a8070] transition-colors underline-offset-4 hover:underline"
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[#9a8070] group-hover:text-[#6B4F3A] transition-colors">退会申請</p>
-              <p className="text-xs text-[#b8a898] mt-1">退会をご希望の場合はこちら</p>
-            </div>
-            <svg className="w-4 h-4 text-[#c0b0a0] group-hover:text-[#9a8070] transition-colors flex-shrink-0 ml-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </div>
+          退会のご希望はこちら
         </Link>
       </div>
 

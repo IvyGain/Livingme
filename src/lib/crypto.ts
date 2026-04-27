@@ -3,9 +3,10 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypt
 const ALGORITHM = "aes-256-gcm";
 
 function getKey(): Buffer {
-  const secret = process.env.NEXTAUTH_SECRET;
-  if (!secret) throw new Error("NEXTAUTH_SECRET is not set");
-  return scryptSync(secret, "livingme-settings", 32);
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+  if (!secret) throw new Error("AUTH_SECRET (or NEXTAUTH_SECRET) is not set");
+  const salt = process.env.AUTH_SALT ?? "livingme-settings";
+  return scryptSync(secret, salt, 32);
 }
 
 export function encrypt(text: string): string {
