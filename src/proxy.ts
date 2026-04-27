@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import type { UserRole } from "@prisma/client";
 
-// NextAuth v5: cookie name は secure prefix + "authjs.session-token"
-function cookieName(req: NextRequest): string {
-  const secure = req.url.startsWith("https://");
-  return secure ? "__Secure-authjs.session-token" : "authjs.session-token";
+// NextAuth v5: cookie name は本番（NODE_ENV=production）で __Secure- プレフィックス。
+// auth.ts の useSecureCookies と同じ判定にして整合させる。
+const USE_SECURE_COOKIES = process.env.NODE_ENV === "production";
+const SESSION_COOKIE_NAME = USE_SECURE_COOKIES
+  ? "__Secure-authjs.session-token"
+  : "authjs.session-token";
+function cookieName(_req: NextRequest): string {
+  return SESSION_COOKIE_NAME;
 }
 
 const SECRET = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET ?? "";
+
+const IS_PROD = process.env.NODE_ENV === "production";
 
 // 公開パス（認証不要）
 const PUBLIC_PATHS = [
@@ -16,19 +22,26 @@ const PUBLIC_PATHS = [
   "/login",
   "/join",
   "/invite",
-  "/demo",
   "/forgot-password",
   "/reset-password",
   "/api/auth",
   "/api/invite",
   "/api/webhooks",
+  "/api/health",
   "/_next",
   "/favicon.ico",
   "/manifest.json",
+  // /demo は dev のみ公開。prod では下のチェックで 404 にする。
+  ...(IS_PROD ? [] : ["/demo"]),
 ];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // ── /demo は本番では存在しない扱い ────────────────────────────
+  if (IS_PROD && pathname.startsWith("/demo")) {
+    return NextResponse.rewrite(new URL("/not-found", req.url));
+  }
 
   // ── JWT をクッキーから直接読む ──────────────────────────────────
   const name = cookieName(req);

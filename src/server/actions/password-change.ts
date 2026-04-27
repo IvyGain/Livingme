@@ -53,7 +53,7 @@ export async function requestPasswordReset(
   try {
     // メールアドレス単位でレート制限（10分間に3回まで）
     const rateLimitKey = `pwd-reset:${email.toLowerCase()}`;
-    const limit = checkAndRecordCustomLimit(rateLimitKey, {
+    const limit = await checkAndRecordCustomLimit(rateLimitKey, {
       maxAttempts: 3,
       windowMs: 10 * 60_000,
       blockMs: 10 * 60_000,

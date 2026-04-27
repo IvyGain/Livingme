@@ -18,10 +18,26 @@ async function getDummyHash(): Promise<string> {
 // NextAuth v5 は AUTH_SECRET を読む（v4 の NEXTAUTH_SECRET とは異なる）
 // Vercel 環境変数との後方互換性のため両方を参照する
 const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+const useSecureCookies = process.env.NODE_ENV === "production";
+const sessionTokenCookieName = useSecureCookies
+  ? "__Secure-authjs.session-token"
+  : "authjs.session-token";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
   secret,
+  useSecureCookies,
+  cookies: {
+    sessionToken: {
+      name: sessionTokenCookieName,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+  },
   providers: [
     Credentials({
       credentials: {
@@ -35,7 +51,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // ── レートリミット確認（メールアドレス単位）──────────────
         const rateLimitKey = `login:${email}`;
-        const rateCheck = checkRateLimit(rateLimitKey);
+        const rateCheck = await checkRateLimit(rateLimitKey);
         if (!rateCheck.allowed) {
           const ip = (request as Request | undefined)
             ?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -56,14 +72,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await verifyPassword(password, storedHash);
 
         if (!valid || !user?.password) {
-          const result = recordFailure(rateLimitKey);
+          const result = await recordFailure(rateLimitKey);
           if (!result.allowed) {
             console.warn(`[auth] Account ${email} locked after repeated failures`);
           }
           return null;
         }
 
-        clearFailures(rateLimitKey);
+        await clearFailures(rateLimitKey);
 
         return {
           id: user.id,
@@ -76,7 +92,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24,  // refresh once per day
+  },
   pages: {
     signIn: "/login",
     error: "/login?error=1",

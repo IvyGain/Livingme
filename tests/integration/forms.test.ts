@@ -9,9 +9,11 @@ vi.mock("@/lib/auth", () => ({ auth: mockAuth }));
 
 // Mock Prisma (for ambassador check)
 const mockUserFindUnique = vi.fn();
+const mockDynamicFormFindUnique = vi.fn();
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findUnique: mockUserFindUnique },
+    dynamicForm: { findUnique: mockDynamicFormFindUnique },
   },
 }));
 
@@ -26,6 +28,8 @@ describe("フォーム送信 Server Action", () => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue(memberSession);
     mockUserFindUnique.mockResolvedValue(null);
+    // 動的フォームには無いスラグなので、常に null → 静的 getFormDef にフォールバック
+    mockDynamicFormFindUnique.mockResolvedValue(null);
   });
 
   test("存在しないスラグはエラーを返す", async () => {
