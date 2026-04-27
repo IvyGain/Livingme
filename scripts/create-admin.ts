@@ -52,7 +52,7 @@ async function main() {
       update: {
         password: hashedPassword,
         role: "ADMIN",
-        status: "MEMBER",
+        isActive: true,
         name,
       },
       create: {
@@ -60,7 +60,7 @@ async function main() {
         password: hashedPassword,
         name,
         role: "ADMIN",
-        status: "MEMBER",
+        isActive: true,
         joinedAt: new Date(),
       },
     });
@@ -70,7 +70,7 @@ async function main() {
     console.log(`   Email : ${user.email}`);
     console.log(`   Name  : ${user.name}`);
     console.log(`   Role  : ${user.role}`);
-    console.log(`   Status: ${user.status}`);
+    console.log(`   Active: ${user.isActive}`);
     console.log("");
     console.log(`👉 ${process.env.NEXT_PUBLIC_APP_URL ?? "https://livingme.vercel.app"}/login からログインしてください`);
   } finally {
